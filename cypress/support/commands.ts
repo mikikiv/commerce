@@ -9,6 +9,6 @@
 // https://on.cypress.io/custom-commands
 // ***********************************************
 
-Cypress.Commands.add('dataCy', (selector, ...args) => {
-  return cy.get(`[data-testid=${selector}]`, ...args);
+Cypress.Commands.add('dataCy', (value: string) => {
+  cy.get(`[data-testid="${value}"]`);
 });
