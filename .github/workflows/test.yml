@@ -1,5 +1,5 @@
-name: test
-on: pull_request
+name: e2e on chromium
+on: [push, pull_request]
 
 # Cancel in progress workflows on pull_requests.
 # https://docs.github.com/en/actions/using-jobs/using-concurrency#example-using-a-fallback-value
@@ -8,28 +8,20 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test:
+  install:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-      - name: Set node version
-        uses: actions/setup-node@v3
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Cypress run
+        uses: cypress-io/github-action@v3
         with:
-          node-version-file: '.nvmrc'
-      - name: Set pnpm version
-        uses: pnpm/action-setup@v2
-        with:
-          run_install: false
-          version: 7
-      - name: Cache node_modules
-        id: node-modules-cache
-        uses: actions/cache@v3
-        with:
-          path: '**/node_modules'
-          key: node-modules-cache-${{ hashFiles('**/pnpm-lock.yaml') }}
-      - name: Install dependencies
-        if: steps.node-modules-cache.outputs.cache-hit != 'true'
-        run: pnpm install --no-frozen-lockfile
-      - name: Run tests
-        run: pnpm test
+          browser: chromium
+          build: pnpm run build
+          start: pnpm run start
+          wait-on: 'http://localhost:3000'
+        env:
+          COMMERCE_PROVIDER: ${{ secrets.COMMERCE_PROVIDER }}
+          NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN: ${{ secrets.NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN }}
+          NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN: ${{ secrets.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN }}
